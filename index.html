@@ -12,14 +12,14 @@
         
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 5px; }
         .header h1 { font-size: 22px; font-weight: bold; margin: 0; }
-        .add-btn { background: var(--blue); color: white; border: none; border-radius: 10px; padding: 8px 15px; font-weight: bold; font-size: 14px; }
+        .add-btn { background: var(--blue); color: white; border: none; border-radius: 12px; padding: 10px 18px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 10px rgba(49, 130, 246, 0.2); }
 
         .card { background: white; border-radius: 24px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
         .stock-name-input { border: none; font-size: 19px; font-weight: bold; color: var(--text-main); width: 70%; outline: none; }
-        .del-btn { background: none; border: none; color: var(--text-sub); font-size: 13px; }
+        .del-btn { background: #fee; border: none; color: var(--red); padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; }
 
-        .section-title { font-size: 13px; font-weight: 600; color: var(--text-sub); margin: 15px 0 8px 0; display: flex; align-items: center; gap: 4px; }
+        .section-title { font-size: 13px; font-weight: 600; color: var(--text-sub); margin: 15px 0 8px 0; }
         
         .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
         .input-box { flex: 1; background: #f9fafb; border-radius: 14px; display: flex; align-items: center; padding: 4px 10px; border: 1px solid #f2f2f2; }
@@ -27,10 +27,11 @@
         .unit { font-size: 12px; color: var(--text-sub); margin-left: 2px; }
 
         /* 결과 영역 */
-        .result-box { background: #f9fafb; border-radius: 16px; padding: 16px; margin-top: 15px; }
-        .result-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .result-box { background: #f9fafb; border-radius: 18px; padding: 18px; margin-top: 20px; border: 1px inset rgba(0,0,0,0.02); }
+        .result-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px; }
         .result-row:last-child { margin-bottom: 0; }
-        .val-bold { font-weight: bold; font-size: 16px; }
+        .val-bold { font-weight: 700; font-size: 16px; }
+        .val-total { color: #4e5968; } /* 총액 강조용 */
         .up { color: var(--red); }
         .down { color: var(--blue); }
 
@@ -46,13 +47,13 @@
 
     <div id="stockList"></div>
 
-    <div class="footer-info">모든 정보는 내 폰에만 안전하게 저장됩니다.</div>
+    <div class="footer-info">모든 데이터는 기기에 자동으로 저장됩니다.</div>
 
 <script>
     let stocks = [];
 
     window.onload = () => {
-        const saved = localStorage.getItem('myStocksV2');
+        const saved = localStorage.getItem('myStocksV3');
         if (saved) {
             stocks = JSON.parse(saved);
             render();
@@ -65,11 +66,11 @@
         const newStock = {
             id: Date.now(),
             name: "새 종목",
-            curPrice: "",   // 현재 평단
-            curQty: "",     // 현재 수량
-            buyPrice: "",   // 추가 매수가
-            buyQty: "",     // 추가 수량
-            targetRate: ""  // 목표 수익률 %
+            curPrice: "",
+            curQty: "",
+            buyPrice: "",
+            buyQty: "",
+            targetRate: ""
         };
         stocks.push(newStock);
         save();
@@ -94,7 +95,7 @@
     }
 
     function save() {
-        localStorage.setItem('myStocksV2', JSON.stringify(stocks));
+        localStorage.setItem('myStocksV3', JSON.stringify(stocks));
     }
 
     function refreshCard(id) {
@@ -107,21 +108,24 @@
         const bQ = parseFloat(s.buyQty) || 0;
         const tR = parseFloat(s.targetRate) || 0;
 
-        // 1. 평단가 계산
-        const totalQty = cQ + bQ;
+        // 1. 총 매수 금액 계산 (보유분 + 추가매수분)
         const totalCost = (cP * cQ) + (bP * bQ);
+        
+        // 2. 평단가 계산
+        const totalQty = cQ + bQ;
         const newAvg = totalQty > 0 ? Math.floor(totalCost / totalQty) : 0;
 
-        // 2. 현재 수익률 계산 (추가 매수가를 현재가로 가정 시)
+        // 3. 현재 수익률 계산 (추가 매수가를 현재가로 가정 시)
         let profitRate = 0;
         if (cP > 0 && bP > 0) {
             profitRate = ((bP - cP) / cP) * 100;
         }
 
-        // 3. 목표가 계산 (평단 기준)
+        // 4. 목표가 계산 (평단 기준)
         const targetPrice = newAvg > 0 ? Math.floor(newAvg * (1 + tR / 100)) : 0;
 
         // UI 업데이트
+        document.getElementById(`resTotal-${id}`).innerText = totalCost.toLocaleString() + "원";
         document.getElementById(`resAvg-${id}`).innerText = newAvg.toLocaleString() + "원";
         
         const rateEl = document.getElementById(`resRate-${id}`);
@@ -165,15 +169,19 @@
 
                     <div class="result-box">
                         <div class="result-row">
+                            <span style="color:#8b95a1">총 매수 금액</span>
+                            <span class="val-bold val-total" id="resTotal-${s.id}">0원</span>
+                        </div>
+                        <div class="result-row">
                             <span>예상 평단가</span>
                             <span class="val-bold" id="resAvg-${s.id}">0원</span>
                         </div>
                         <div class="result-row">
-                            <span>현재 수익률(평단 대비)</span>
+                            <span>현재 수익률</span>
                             <span class="val-bold" id="resRate-${s.id}">0%</span>
                         </div>
                         <div class="result-row">
-                            <span>목표 매도가(익절가)</span>
+                            <span>목표 매도가</span>
                             <span class="val-bold up" id="resTarget-${s.id}">0원</span>
                         </div>
                     </div>
