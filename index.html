@@ -5,84 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>나만의 주식 관리</title>
+    <title>주식 매니저 Pro</title>
     <style>
-        :root { --blue: #3182f6; --gray-bg: #f2f4f6; --text-main: #191f28; --text-sub: #8b95a1; --red: #ff4d4f; }
+        :root { --blue: #3182f6; --gray-bg: #f2f4f6; --text-main: #191f28; --text-sub: #8b95a1; --red: #f04452; --green: #32d08d; }
         body { font-family: -apple-system, sans-serif; background-color: var(--gray-bg); margin: 0; padding: 20px 15px 100px 15px; color: var(--text-main); -webkit-user-select: none; }
         
-        /* 헤더 스타일 */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 5px; }
         .header h1 { font-size: 22px; font-weight: bold; margin: 0; }
         .add-btn { background: var(--blue); color: white; border: none; border-radius: 10px; padding: 8px 15px; font-weight: bold; font-size: 14px; }
 
-        /* 종목 카드 */
-        .card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: relative; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .stock-name-input { border: none; font-size: 18px; font-weight: bold; color: var(--text-main); width: 70%; outline: none; }
-        .del-btn { background: none; border: none; color: var(--red); font-size: 14px; font-weight: 500; }
+        .card { background: white; border-radius: 24px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .stock-name-input { border: none; font-size: 19px; font-weight: bold; color: var(--text-main); width: 70%; outline: none; }
+        .del-btn { background: none; border: none; color: var(--text-sub); font-size: 13px; }
 
-        .title { font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
+        .section-title { font-size: 13px; font-weight: 600; color: var(--text-sub); margin: 15px 0 8px 0; display: flex; align-items: center; gap: 4px; }
         
-        .input-row { display: flex; gap: 8px; margin-bottom: 12px; }
-        .input-box { flex: 1; background: #f9fafb; border-radius: 12px; display: flex; align-items: center; padding: 2px 8px; border: 1px solid #eee; }
-        .input-box input { border: none; background: transparent; width: 100%; text-align: center; font-size: 15px; font-weight: bold; padding: 8px 0; outline: none; }
-        .btn-ctrl { background: none; border: none; font-size: 18px; color: #ccc; padding: 0 8px; cursor: pointer; }
+        .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        .input-box { flex: 1; background: #f9fafb; border-radius: 14px; display: flex; align-items: center; padding: 4px 10px; border: 1px solid #f2f2f2; }
+        .input-box input { border: none; background: transparent; width: 100%; text-align: center; font-size: 15px; font-weight: bold; padding: 10px 0; outline: none; color: #333; }
+        .unit { font-size: 12px; color: var(--text-sub); margin-left: 2px; }
 
-        .highlight-text { text-align: center; font-size: 16px; font-weight: 600; margin: 15px 0; color: #4e5968; }
-        .highlight-text span { color: var(--blue); }
+        /* 결과 영역 */
+        .result-box { background: #f9fafb; border-radius: 16px; padding: 16px; margin-top: 15px; }
+        .result-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .result-row:last-child { margin-bottom: 0; }
+        .val-bold { font-weight: bold; font-size: 16px; }
+        .up { color: var(--red); }
+        .down { color: var(--blue); }
 
-        .comparison { display: flex; justify-content: space-around; align-items: center; background: #f9fafb; border-radius: 12px; padding: 15px 0; }
-        .comp-item { text-align: center; }
-        .comp-label { font-size: 11px; color: var(--text-sub); margin-bottom: 4px; }
-        .comp-val { font-size: 15px; font-weight: bold; }
-        .arrow { color: #ccc; font-size: 18px; }
-
-        /* 하단 안내 */
-        .footer-info { text-align: center; color: var(--text-sub); font-size: 12px; margin-top: 20px; }
+        .footer-info { text-align: center; color: var(--text-sub); font-size: 12px; margin-top: 30px; opacity: 0.7; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>내 종목 평단</h1>
+        <h1>내 주식 계산기</h1>
         <button class="add-btn" onclick="addStock()">+ 종목 추가</button>
     </div>
 
-    <div id="stockList">
-        </div>
+    <div id="stockList"></div>
 
-    <div class="footer-info">모든 데이터는 기기에 자동으로 저장됩니다.</div>
+    <div class="footer-info">모든 정보는 내 폰에만 안전하게 저장됩니다.</div>
 
 <script>
     let stocks = [];
 
-    // 초기 로드
     window.onload = () => {
-        const saved = localStorage.getItem('myStocks');
+        const saved = localStorage.getItem('myStocksV2');
         if (saved) {
             stocks = JSON.parse(saved);
             render();
         } else {
-            addStock(); // 데이터 없으면 기본 하나 생성
+            addStock();
         }
     }
 
-    // 종목 추가
     function addStock() {
         const newStock = {
             id: Date.now(),
             name: "새 종목",
-            curPrice: "",
-            curQty: "",
-            buyPrice: 0,
-            buyQty: 1
+            curPrice: "",   // 현재 평단
+            curQty: "",     // 현재 수량
+            buyPrice: "",   // 추가 매수가
+            buyQty: "",     // 추가 수량
+            targetRate: ""  // 목표 수익률 %
         };
         stocks.push(newStock);
         save();
         render();
     }
 
-    // 종목 삭제
     function deleteStock(id) {
         if(confirm("이 종목을 삭제할까요?")) {
             stocks = stocks.filter(s => s.id !== id);
@@ -91,43 +84,51 @@
         }
     }
 
-    // 값 업데이트
     function updateValue(id, field, value) {
         const stock = stocks.find(s => s.id === id);
         if (stock) {
-            stock[field] = field.includes('Qty') || field.includes('Price') ? parseFloat(value) || 0 : value;
+            stock[field] = value;
             save();
-            calc(id);
+            refreshCard(id);
         }
-    }
-
-    // 스텝 조절 (+, - 버튼)
-    function step(id, field, amount) {
-        const stock = stocks.find(s => s.id === id);
-        if (stock) {
-            stock[field] = Math.max(0, (parseFloat(stock[field]) || 0) + amount);
-            document.getElementById(`${field}-${id}`).value = stock[field];
-            save();
-            calc(id);
-        }
-    }
-
-    // 계산 로직
-    function calc(id) {
-        const s = stocks.find(s => s.id === id);
-        const totalBuy = s.buyPrice * s.buyQty;
-        const totalQty = (parseFloat(s.curQty) || 0) + (parseFloat(s.buyQty) || 0);
-        const totalCost = ((parseFloat(s.curPrice) || 0) * (parseFloat(s.curQty) || 0)) + totalBuy;
-        
-        const newAvg = totalQty > 0 ? Math.floor(totalCost / totalQty) : 0;
-
-        document.getElementById(`totalBuy-${id}`).innerText = totalBuy.toLocaleString();
-        document.getElementById(`resCur-${id}`).innerText = (parseFloat(s.curPrice) || 0).toLocaleString() + "원";
-        document.getElementById(`resNew-${id}`).innerText = newAvg.toLocaleString() + "원";
     }
 
     function save() {
-        localStorage.setItem('myStocks', JSON.stringify(stocks));
+        localStorage.setItem('myStocksV2', JSON.stringify(stocks));
+    }
+
+    function refreshCard(id) {
+        const s = stocks.find(s => s.id === id);
+        if(!s) return;
+
+        const cP = parseFloat(s.curPrice) || 0;
+        const cQ = parseFloat(s.curQty) || 0;
+        const bP = parseFloat(s.buyPrice) || 0;
+        const bQ = parseFloat(s.buyQty) || 0;
+        const tR = parseFloat(s.targetRate) || 0;
+
+        // 1. 평단가 계산
+        const totalQty = cQ + bQ;
+        const totalCost = (cP * cQ) + (bP * bQ);
+        const newAvg = totalQty > 0 ? Math.floor(totalCost / totalQty) : 0;
+
+        // 2. 현재 수익률 계산 (추가 매수가를 현재가로 가정 시)
+        let profitRate = 0;
+        if (cP > 0 && bP > 0) {
+            profitRate = ((bP - cP) / cP) * 100;
+        }
+
+        // 3. 목표가 계산 (평단 기준)
+        const targetPrice = newAvg > 0 ? Math.floor(newAvg * (1 + tR / 100)) : 0;
+
+        // UI 업데이트
+        document.getElementById(`resAvg-${id}`).innerText = newAvg.toLocaleString() + "원";
+        
+        const rateEl = document.getElementById(`resRate-${id}`);
+        rateEl.innerText = profitRate.toFixed(2) + "%";
+        rateEl.className = `val-bold ${profitRate >= 0 ? 'up' : 'down'}`;
+
+        document.getElementById(`resTarget-${id}`).innerText = targetPrice.toLocaleString() + "원";
     }
 
     function render() {
@@ -135,55 +136,50 @@
         list.innerHTML = '';
         
         stocks.forEach(s => {
-            const totalBuy = s.buyPrice * s.buyQty;
-            const totalQty = (parseFloat(s.curQty) || 0) + (parseFloat(s.buyQty) || 0);
-            const totalCost = ((parseFloat(s.curPrice) || 0) * (parseFloat(s.curQty) || 0)) + totalBuy;
-            const newAvg = totalQty > 0 ? Math.floor(totalCost / totalQty) : 0;
-
             list.innerHTML += `
                 <div class="card" id="card-${s.id}">
                     <div class="card-header">
-                        <input type="text" class="stock-name-input" value="${s.name}" oninput="updateValue(${s.id}, 'name', this.value)" placeholder="종목명 입력">
+                        <input type="text" class="stock-name-input" value="${s.name}" oninput="updateValue(${s.id}, 'name', this.value)" placeholder="종목명">
                         <button class="del-btn" onclick="deleteStock(${s.id})">삭제</button>
                     </div>
 
-                    <div class="title">보유 현황</div>
+                    <div class="section-title">📉 보유 현황</div>
                     <div class="input-row">
                         <div class="input-box"><input type="number" value="${s.curPrice}" placeholder="현재 평단" oninput="updateValue(${s.id}, 'curPrice', this.value)"></div>
-                        <div class="input-box"><input type="number" value="${s.curQty}" placeholder="현재 수량" oninput="updateValue(${s.id}, 'curQty', this.value)"></div>
+                        <div class="input-box"><input type="number" value="${s.curQty}" placeholder="보유 수량" oninput="updateValue(${s.id}, 'curQty', this.value)"></div>
                     </div>
 
-                    <div class="title">추가 매수</div>
+                    <div class="section-title">💸 추가 매수 / 현재가</div>
+                    <div class="input-row">
+                        <div class="input-box"><input type="number" value="${s.buyPrice}" placeholder="매수(현재)가" oninput="updateValue(${s.id}, 'buyPrice', this.value)"></div>
+                        <div class="input-box"><input type="number" value="${s.buyQty}" placeholder="매수 수량" oninput="updateValue(${s.id}, 'buyQty', this.value)"></div>
+                    </div>
+
+                    <div class="section-title">🎯 목표 수익률</div>
                     <div class="input-row">
                         <div class="input-box">
-                            <button class="btn-ctrl" onclick="step(${s.id}, 'buyPrice', -1000)">-</button>
-                            <input type="number" id="buyPrice-${s.id}" value="${s.buyPrice}" oninput="updateValue(${s.id}, 'buyPrice', this.value)">
-                            <button class="btn-ctrl" onclick="step(${s.id}, 'buyPrice', 1000)">+</button>
-                        </div>
-                        <div class="input-box">
-                            <button class="btn-ctrl" onclick="step(${s.id}, 'buyQty', -1)">-</button>
-                            <input type="number" id="buyQty-${s.id}" value="${s.buyQty}" oninput="updateValue(${s.id}, 'buyQty', this.value)">
-                            <button class="btn-ctrl" onclick="step(${s.id}, 'buyQty', 1)">+</button>
+                            <input type="number" value="${s.targetRate}" placeholder="목표 수익률" oninput="updateValue(${s.id}, 'targetRate', this.value)">
+                            <span class="unit">%</span>
                         </div>
                     </div>
 
-                    <div class="highlight-text">
-                        <span id="totalBuy-${s.id}">${totalBuy.toLocaleString()}</span>원 더 매수하면?
-                    </div>
-
-                    <div class="comparison">
-                        <div class="comp-item">
-                            <div class="comp-label">현재 평단</div>
-                            <div class="comp-val" id="resCur-${s.id}">${(parseFloat(s.curPrice) || 0).toLocaleString()}원</div>
+                    <div class="result-box">
+                        <div class="result-row">
+                            <span>예상 평단가</span>
+                            <span class="val-bold" id="resAvg-${s.id}">0원</span>
                         </div>
-                        <div class="arrow">→</div>
-                        <div class="comp-item">
-                            <div class="comp-label" style="color:var(--blue)">예상 평단</div>
-                            <div class="comp-val" id="resNew-${s.id}" style="color:var(--blue)">${newAvg.toLocaleString()}원</div>
+                        <div class="result-row">
+                            <span>현재 수익률(평단 대비)</span>
+                            <span class="val-bold" id="resRate-${s.id}">0%</span>
+                        </div>
+                        <div class="result-row">
+                            <span>목표 매도가(익절가)</span>
+                            <span class="val-bold up" id="resTarget-${s.id}">0원</span>
                         </div>
                     </div>
                 </div>
             `;
+            refreshCard(s.id);
         });
     }
 </script>
