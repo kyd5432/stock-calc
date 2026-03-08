@@ -5,112 +5,186 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>평단 계산기</title>
+    <title>나만의 주식 관리</title>
     <style>
-        :root { --blue: #3182f6; --gray-bg: #f2f4f6; --text-main: #191f28; --text-sub: #8b95a1; }
-        body { font-family: -apple-system, sans-serif; background-color: var(--gray-bg); margin: 0; padding: 20px; color: var(--text-main); -webkit-user-select: none; }
+        :root { --blue: #3182f6; --gray-bg: #f2f4f6; --text-main: #191f28; --text-sub: #8b95a1; --red: #ff4d4f; }
+        body { font-family: -apple-system, sans-serif; background-color: var(--gray-bg); margin: 0; padding: 20px 15px 100px 15px; color: var(--text-main); -webkit-user-select: none; }
         
-        .card { background: white; border-radius: 20px; padding: 24px; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .title { font-size: 15px; font-weight: 600; color: var(--text-sub); margin-bottom: 15px; }
-        
-        /* 입력창 디자인 */
-        .input-row { display: flex; gap: 10px; margin-bottom: 15px; }
-        .input-box { flex: 1; background: #f9fafb; border-radius: 12px; display: flex; align-items: center; padding: 5px 10px; border: 1px solid #eee; }
-        .input-box input { border: none; background: transparent; width: 100%; text-align: center; font-size: 16px; font-weight: bold; padding: 10px 0; outline: none; }
-        .btn-ctrl { background: none; border: none; font-size: 20px; color: #ccc; padding: 0 10px; cursor: pointer; }
+        /* 헤더 스타일 */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 5px; }
+        .header h1 { font-size: 22px; font-weight: bold; margin: 0; }
+        .add-btn { background: var(--blue); color: white; border: none; border-radius: 10px; padding: 8px 15px; font-weight: bold; font-size: 14px; }
 
-        /* 결과 강조 섹션 */
-        .highlight-text { text-align: center; font-size: 20px; font-weight: bold; margin: 20px 0; }
+        /* 종목 카드 */
+        .card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: relative; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .stock-name-input { border: none; font-size: 18px; font-weight: bold; color: var(--text-main); width: 70%; outline: none; }
+        .del-btn { background: none; border: none; color: var(--red); font-size: 14px; font-weight: 500; }
+
+        .title { font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
+        
+        .input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+        .input-box { flex: 1; background: #f9fafb; border-radius: 12px; display: flex; align-items: center; padding: 2px 8px; border: 1px solid #eee; }
+        .input-box input { border: none; background: transparent; width: 100%; text-align: center; font-size: 15px; font-weight: bold; padding: 8px 0; outline: none; }
+        .btn-ctrl { background: none; border: none; font-size: 18px; color: #ccc; padding: 0 8px; cursor: pointer; }
+
+        .highlight-text { text-align: center; font-size: 16px; font-weight: 600; margin: 15px 0; color: #4e5968; }
         .highlight-text span { color: var(--blue); }
 
-        /* 비교 섹션 */
-        .comparison { display: flex; justify-content: space-around; align-items: center; margin-top: 20px; }
+        .comparison { display: flex; justify-content: space-around; align-items: center; background: #f9fafb; border-radius: 12px; padding: 15px 0; }
         .comp-item { text-align: center; }
-        .comp-label { font-size: 13px; color: var(--text-sub); margin-bottom: 5px; }
-        .comp-val { font-size: 18px; font-weight: bold; }
-        .arrow { color: #ccc; font-size: 24px; }
+        .comp-label { font-size: 11px; color: var(--text-sub); margin-bottom: 4px; }
+        .comp-val { font-size: 15px; font-weight: bold; }
+        .arrow { color: #ccc; font-size: 18px; }
+
+        /* 하단 안내 */
+        .footer-info { text-align: center; color: var(--text-sub); font-size: 12px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <div class="title">현재 보유 현황 (자동 저장됨)</div>
-        <div class="input-row">
-            <div class="input-box">
-                <input type="number" id="curPrice" placeholder="현재 평단" oninput="saveAndCalc()">
-            </div>
-            <div class="input-box">
-                <input type="number" id="curQty" placeholder="보유 수량" oninput="saveAndCalc()">
-            </div>
-        </div>
+    <div class="header">
+        <h1>내 종목 평단</h1>
+        <button class="add-btn" onclick="addStock()">+ 종목 추가</button>
     </div>
 
-    <div class="card">
-        <div class="title">추가 매수할까요?</div>
-        <div class="input-row">
-            <div class="input-box">
-                <button class="btn-ctrl" onclick="step('buyPrice', -1000)">-</button>
-                <input type="number" id="buyPrice" value="0" oninput="calc()">
-                <button class="btn-ctrl" onclick="step('buyPrice', 1000)">+</button>
-            </div>
-            <div class="input-box">
-                <button class="btn-ctrl" onclick="step('buyQty', -1)">-</button>
-                <input type="number" id="buyQty" value="1" oninput="calc()">
-                <button class="btn-ctrl" onclick="step('buyQty', 1)">+</button>
-            </div>
+    <div id="stockList">
         </div>
-        <div class="highlight-text">
-            <span id="totalBuyAmount">0</span>원 더 매수하면?
-        </div>
-    </div>
 
-    <div class="card">
-        <div class="title">이렇게 바뀌어요</div>
-        <div class="comparison">
-            <div class="comp-item">
-                <div class="comp-label">현재 평단</div>
-                <div class="comp-val" id="resCurPrice">0원</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="comp-item">
-                <div class="comp-label" style="color:var(--blue)">예상 평단</div>
-                <div class="comp-val" id="resNewPrice" style="color:var(--blue)">0원</div>
-            </div>
-        </div>
-    </div>
+    <div class="footer-info">모든 데이터는 기기에 자동으로 저장됩니다.</div>
 
 <script>
-    // 페이지 로드 시 저장된 값 불러오기
+    let stocks = [];
+
+    // 초기 로드
     window.onload = () => {
-        document.getElementById('curPrice').value = localStorage.getItem('curPrice') || '';
-        document.getElementById('curQty').value = localStorage.getItem('curQty') || '';
-        calc();
+        const saved = localStorage.getItem('myStocks');
+        if (saved) {
+            stocks = JSON.parse(saved);
+            render();
+        } else {
+            addStock(); // 데이터 없으면 기본 하나 생성
+        }
     }
 
-    function step(id, amount) {
-        const el = document.getElementById(id);
-        el.value = Math.max(0, (parseInt(el.value) || 0) + amount);
-        calc();
+    // 종목 추가
+    function addStock() {
+        const newStock = {
+            id: Date.now(),
+            name: "새 종목",
+            curPrice: "",
+            curQty: "",
+            buyPrice: 0,
+            buyQty: 1
+        };
+        stocks.push(newStock);
+        save();
+        render();
     }
 
-    function saveAndCalc() {
-        localStorage.setItem('curPrice', document.getElementById('curPrice').value);
-        localStorage.setItem('curQty', document.getElementById('curQty').value);
-        calc();
+    // 종목 삭제
+    function deleteStock(id) {
+        if(confirm("이 종목을 삭제할까요?")) {
+            stocks = stocks.filter(s => s.id !== id);
+            save();
+            render();
+        }
     }
 
-    function calc() {
-        const cP = parseFloat(document.getElementById('curPrice').value) || 0;
-        const cQ = parseFloat(document.getElementById('curQty').value) || 0;
-        const bP = parseFloat(document.getElementById('buyPrice').value) || 0;
-        const bQ = parseFloat(document.getElementById('buyQty').value) || 0;
+    // 값 업데이트
+    function updateValue(id, field, value) {
+        const stock = stocks.find(s => s.id === id);
+        if (stock) {
+            stock[field] = field.includes('Qty') || field.includes('Price') ? parseFloat(value) || 0 : value;
+            save();
+            calc(id);
+        }
+    }
 
-        const totalBuy = bP * bQ;
-        const newAvg = ( (cP * cQ) + (bP * bQ) ) / (cQ + bQ);
+    // 스텝 조절 (+, - 버튼)
+    function step(id, field, amount) {
+        const stock = stocks.find(s => s.id === id);
+        if (stock) {
+            stock[field] = Math.max(0, (parseFloat(stock[field]) || 0) + amount);
+            document.getElementById(`${field}-${id}`).value = stock[field];
+            save();
+            calc(id);
+        }
+    }
 
-        document.getElementById('totalBuyAmount').innerText = totalBuy.toLocaleString();
-        document.getElementById('resCurPrice').innerText = cP.toLocaleString() + "원";
-        document.getElementById('resNewPrice').innerText = (isFinite(newAvg) ? Math.floor(newAvg).toLocaleString() : 0) + "원";
+    // 계산 로직
+    function calc(id) {
+        const s = stocks.find(s => s.id === id);
+        const totalBuy = s.buyPrice * s.buyQty;
+        const totalQty = (parseFloat(s.curQty) || 0) + (parseFloat(s.buyQty) || 0);
+        const totalCost = ((parseFloat(s.curPrice) || 0) * (parseFloat(s.curQty) || 0)) + totalBuy;
+        
+        const newAvg = totalQty > 0 ? Math.floor(totalCost / totalQty) : 0;
+
+        document.getElementById(`totalBuy-${id}`).innerText = totalBuy.toLocaleString();
+        document.getElementById(`resCur-${id}`).innerText = (parseFloat(s.curPrice) || 0).toLocaleString() + "원";
+        document.getElementById(`resNew-${id}`).innerText = newAvg.toLocaleString() + "원";
+    }
+
+    function save() {
+        localStorage.setItem('myStocks', JSON.stringify(stocks));
+    }
+
+    function render() {
+        const list = document.getElementById('stockList');
+        list.innerHTML = '';
+        
+        stocks.forEach(s => {
+            const totalBuy = s.buyPrice * s.buyQty;
+            const totalQty = (parseFloat(s.curQty) || 0) + (parseFloat(s.buyQty) || 0);
+            const totalCost = ((parseFloat(s.curPrice) || 0) * (parseFloat(s.curQty) || 0)) + totalBuy;
+            const newAvg = totalQty > 0 ? Math.floor(totalCost / totalQty) : 0;
+
+            list.innerHTML += `
+                <div class="card" id="card-${s.id}">
+                    <div class="card-header">
+                        <input type="text" class="stock-name-input" value="${s.name}" oninput="updateValue(${s.id}, 'name', this.value)" placeholder="종목명 입력">
+                        <button class="del-btn" onclick="deleteStock(${s.id})">삭제</button>
+                    </div>
+
+                    <div class="title">보유 현황</div>
+                    <div class="input-row">
+                        <div class="input-box"><input type="number" value="${s.curPrice}" placeholder="현재 평단" oninput="updateValue(${s.id}, 'curPrice', this.value)"></div>
+                        <div class="input-box"><input type="number" value="${s.curQty}" placeholder="현재 수량" oninput="updateValue(${s.id}, 'curQty', this.value)"></div>
+                    </div>
+
+                    <div class="title">추가 매수</div>
+                    <div class="input-row">
+                        <div class="input-box">
+                            <button class="btn-ctrl" onclick="step(${s.id}, 'buyPrice', -1000)">-</button>
+                            <input type="number" id="buyPrice-${s.id}" value="${s.buyPrice}" oninput="updateValue(${s.id}, 'buyPrice', this.value)">
+                            <button class="btn-ctrl" onclick="step(${s.id}, 'buyPrice', 1000)">+</button>
+                        </div>
+                        <div class="input-box">
+                            <button class="btn-ctrl" onclick="step(${s.id}, 'buyQty', -1)">-</button>
+                            <input type="number" id="buyQty-${s.id}" value="${s.buyQty}" oninput="updateValue(${s.id}, 'buyQty', this.value)">
+                            <button class="btn-ctrl" onclick="step(${s.id}, 'buyQty', 1)">+</button>
+                        </div>
+                    </div>
+
+                    <div class="highlight-text">
+                        <span id="totalBuy-${s.id}">${totalBuy.toLocaleString()}</span>원 더 매수하면?
+                    </div>
+
+                    <div class="comparison">
+                        <div class="comp-item">
+                            <div class="comp-label">현재 평단</div>
+                            <div class="comp-val" id="resCur-${s.id}">${(parseFloat(s.curPrice) || 0).toLocaleString()}원</div>
+                        </div>
+                        <div class="arrow">→</div>
+                        <div class="comp-item">
+                            <div class="comp-label" style="color:var(--blue)">예상 평단</div>
+                            <div class="comp-val" id="resNew-${s.id}" style="color:var(--blue)">${newAvg.toLocaleString()}원</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
     }
 </script>
 </body>
